@@ -1,8 +1,14 @@
 import { PrismaClient } from "@prisma/client";
 import fastify from "fastify";
+import cors from "@fastify/cors";
 import { z } from "zod";
 
 const app = fastify();
+app.register(cors, {
+  origin: "http://localhost:5173",
+  methods: ["GET", "POST"],
+  allowedHeaders: ["Content-Type"],
+});
 
 const prisma = new PrismaClient();
 
@@ -17,19 +23,27 @@ app.get("/users", async () => {
 app.post("/users", async (request, reply) => {
   // Schema pro zod validar os campos.
   const createUserSchema = z.object({
-    name: z.string(),
+    firstName: z.string(),
+    lastName: z.string(),
     email: z.string().email(),
+    password: z.string().min(6),
   });
 
   //Parse não deixa o codigo executar caso falhe validação
-  const { name, email } = createUserSchema.parse(request.body);
+  const { firstName, lastName, email, password } = createUserSchema.parse(
+    request.body
+  );
 
   await prisma.user.create({
     data: {
-      name,
+      firstName,
+      lastName,
       email,
+      password,
     },
   });
+
+  reply.header("Access-Control-Allow-Origin", "http://localhost:5173");
 
   return reply.status(201).send();
 });
@@ -41,4 +55,5 @@ app
   })
   .then(() => {
     console.log("HTTP Server Running");
+    console.log("CORS Plugin Applied:", app.hasDecorator("cors"));
   });
