@@ -5,7 +5,7 @@ import { z } from "zod";
 
 const app = fastify();
 app.register(cors, {
-  origin: "http://localhost:5173",
+  origin: "https://barbershopapi-deploy.onrender.com/",
   methods: ["GET", "POST"],
   allowedHeaders: ["Content-Type"],
 });
